@@ -8,7 +8,7 @@ module.exports = {
         let result = await db.get_user(username);
         existingUser = result[0];
         if(existingUser){
-            res.status(409).send('Username taken')
+            return res.status(409).send('Username taken')
         }
         const salt = bcrypt.genSaltSync(10);
         const hash = bcrypt.hashSync(password, salt);
@@ -23,7 +23,20 @@ module.exports = {
         const db = req.app.get('db');
         const {session} = req;
         const foundUser = await db.get_user(username);
-        foundUser = foundUser[0];
-        
+        user = foundUser[0];
+        if(!user){
+            return res.status(401).send('User not found. Please register asa new user before logging in.')
+        }
+        const isAuthenticated = bcrypt.compareSync(password, user.hash);
+        if(!isAuthenticated){
+            return res.status(403).send('Incorrect password.')
+        }
+        session.user = {isAdmin: user.is_admin, username: user.username, id: user.id}
+        return res.send(session.user);
+    },
+
+    logout: (req, res) => {
+        req.session.destroy();
+        return res.sendStatus(200);
     }
 } 
