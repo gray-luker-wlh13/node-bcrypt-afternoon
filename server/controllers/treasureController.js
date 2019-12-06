@@ -15,7 +15,7 @@ module.exports = {
         const db = req.app.get('db');
         const {treasureURL} = req.body;
         const {id} = req.session.user;
-        const userTreasure = await db.add_user_treasure(treasureURL, id);
+        const userTreasure = await db.add_user_treasure([treasureURL, id]);
         return res.status(200).send(userTreasure);
     },
 
